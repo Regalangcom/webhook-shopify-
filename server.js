@@ -1,54 +1,46 @@
-require('./src/config/env'); // validates required env vars early
-const express = require('express');
-const rateLimit = require('express-rate-limit');
-const logger = require('./src/utils/logger');
-const config = require('./src/config/env');
+require("./src/config/env");
+const express = require("express");
+const rateLimit = require("express-rate-limit");
+const logger = require("./src/utils/logger");
+const config = require("./src/config/env");
 
-const webhookRoutes = require('./src/routes/webhook');
-const dashboardRoutes = require('./src/routes/dashboard');
-const schedulerService = require('./src/services/schedulerService');
+const webhookRoutes = require("./src/routes/webhook");
+const cartRoutes = require("./src/routes/cart");
+const dashboardRoutes = require("./src/routes/dashboard");
 
 const app = express();
+app.set("trust proxy", 1);
 
-// Rate limiting for webhook endpoint — Shopify sends bursts but not huge volumes
+// Rate limiter for Shopify webhook endpoint
 const webhookLimiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
+  windowMs: 60 * 1000,
   max: 100,
   standardHeaders: true,
   legacyHeaders: false,
-  message: { error: 'Too many requests' },
+  message: { error: "Too many requests" },
 });
 
-// Webhook routes use rawBodyMiddleware internally (no express.json here)
-app.use('/webhook', webhookLimiter, webhookRoutes);
+// Webhook routes use rawBodyMiddleware internally — do NOT add express.json() before them
+app.use("/webhook", webhookLimiter, webhookRoutes);
 
-// Dashboard uses standard JSON parsing
+// Standard JSON body parsing for all non-webhook routes
 app.use(express.json());
-app.use('/dashboard', dashboardRoutes);
+app.use("/track-cart", cartRoutes);
+app.use("/dashboard", dashboardRoutes);
 
-// 404 handler
 app.use((req, res) => {
-  res.status(404).json({ error: 'Not found' });
+  res.status(404).json({ error: "Not found" });
 });
 
-// Global error handler
 app.use((err, req, res, next) => {
   logger.error(`Unhandled error: ${err.message}`, { stack: err.stack });
-  res.status(500).json({ error: 'Internal server error' });
+  res.status(500).json({ error: "Internal server error" });
 });
 
-async function start() {
-  // Start the Bull queue worker
-  schedulerService.startWorker();
-
-  app.listen(config.port, () => {
-    logger.info(`Server running on port ${config.port} [${config.nodeEnv}]`);
-    logger.info(`Webhook endpoint: POST /webhook/cart-create`);
-    logger.info(`Dashboard:        GET  /dashboard/carts`);
-  });
-}
-
-start().catch((err) => {
-  logger.error(`Failed to start server: ${err.message}`);
-  process.exit(1);
+app.listen(config.port, () => {
+  logger.info(`Server running on port ${config.port} [${config.nodeEnv}]`);
+  logger.info(`Webhook:    POST /webhook/orders-create`);
+  logger.info(`Track cart: POST /track-cart`);
+  logger.info(`Dashboard:  GET  /dashboard/carts`);
+  logger.info(`Health:     GET  /dashboard/health`);
 });

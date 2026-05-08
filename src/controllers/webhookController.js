@@ -1,51 +1,49 @@
+const customerService = require('../services/customerService');
 const cartService = require('../services/cartService');
-const schedulerService = require('../services/schedulerService');
 const logger = require('../utils/logger');
 
-/**
- * POST /webhook/cart-create
- * Handles Shopify cart/create webhook. Stores cart and schedules reminders.
- */
-async function handleCartCreate(req, res) {
-  // Respond 200 fast — Shopify expects < 5s or it will retry
-  res.status(200).json({ received: true });
-
-  try {
-    const payload = req.body;
-    logger.info(`Cart webhook received: token=${payload.token}`);
-
-    const cart = await cartService.upsertCart(payload);
-    await schedulerService.scheduleReminders(cart);
-
-    logger.info(`Reminders scheduled for cart ${cart.id}`);
-  } catch (err) {
-    // Log but don't re-throw — response is already sent
-    logger.error(`Error processing cart webhook: ${err.message}`, { stack: err.stack });
-  }
+function extractPhone(payload) {
+  return (
+    payload.customer?.phone ||
+    payload.billing_address?.phone ||
+    payload.shipping_address?.phone ||
+    payload.phone ||
+    null
+  );
 }
 
 /**
- * POST /webhook/order-create
- * Handles Shopify order/create webhook. Marks matching cart as converted
- * so pending reminders are skipped.
+ * POST /webhook/orders-create
+ *
+ * 1. Extract email + phone → upsert Customer (phone lookup source for future carts)
+ * 2. If cart_token present → mark Cart as converted (suppresses any pending reminder)
  */
 async function handleOrderCreate(req, res) {
+  // Respond immediately — Shopify retries if we take > 5s
   res.status(200).json({ received: true });
 
   try {
     const payload = req.body;
+    const email = payload.email || payload.customer?.email;
+    const phone = extractPhone(payload);
     const cartToken = payload.cart_token;
 
-    if (!cartToken) {
-      logger.debug('Order webhook received without cart_token — ignoring');
-      return;
+    if (email && phone) {
+      await customerService.upsertCustomer({ email, phone });
+      logger.info(`Customer stored from order: ${email}`);
+    } else {
+      logger.warn(`Order webhook missing email or phone — email:${email} phone:${phone}`);
     }
 
-    logger.info(`Order created for cart token: ${cartToken}`);
-    await cartService.markConverted(cartToken);
+    if (cartToken) {
+      await cartService.markConverted(cartToken);
+      logger.info(`Cart ${cartToken} marked as converted`);
+    } else {
+      logger.debug('Order webhook had no cart_token — skipping cart update');
+    }
   } catch (err) {
-    logger.error(`Error processing order webhook: ${err.message}`);
+    logger.error(`Error processing order webhook: ${err.message}`, { stack: err.stack });
   }
 }
 
-module.exports = { handleCartCreate, handleOrderCreate };
+module.exports = { handleOrderCreate };

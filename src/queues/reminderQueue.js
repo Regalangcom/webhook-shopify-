@@ -1,36 +1,50 @@
-const Bull = require('bull');
-const config = require('../config/env');
-const logger = require('../utils/logger');
+/**
+ * BullMQ Reminder Queue — future upgrade from setTimeout
+ *
+ * Currently NOT imported at startup. The active reminder system lives in
+ * reminder.service.js and uses setTimeout.
+ *
+ * To activate:
+ *   1. Ensure Redis is running
+ *   2. Set REDIS_HOST / REDIS_PORT / REDIS_PASSWORD in .env
+ *   3. In reminder.service.js: uncomment the scheduleReminderJob import and call,
+ *      then remove the setTimeout line
+ *   4. In server.js: import and call startWorker() from /workers/reminderWorker.js
+ */
 
-const redisOptions = {
+const { Queue } = require('bullmq');
+const config = require('../config/env');
+
+const connection = {
   host: config.redis.host,
   port: config.redis.port,
   ...(config.redis.password ? { password: config.redis.password } : {}),
 };
 
-const reminderQueue = new Bull('cart-reminders', {
-  redis: redisOptions,
-  defaultJobOptions: {
-    attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 60000, // 1 min initial backoff, then 2m, 4m
-    },
-    removeOnComplete: 100,
-    removeOnFail: 200,
-  },
-});
+let _queue = null;
 
-reminderQueue.on('error', (err) => {
-  logger.error(`Queue error: ${err.message}`);
-});
+function getQueue() {
+  if (!_queue) {
+    _queue = new Queue('reminder-queue', {
+      connection,
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 60000 },
+        removeOnComplete: 100,
+        removeOnFail: 200,
+      },
+    });
+  }
+  return _queue;
+}
 
-reminderQueue.on('failed', (job, err) => {
-  logger.error(`Job ${job.id} failed (attempt ${job.attemptsMade}): ${err.message}`);
-});
+async function scheduleReminderJob(cartToken, delayMs) {
+  const job = await getQueue().add(
+    'send-reminder',
+    { cartToken },
+    { delay: delayMs }
+  );
+  return job.id;
+}
 
-reminderQueue.on('completed', (job) => {
-  logger.info(`Job ${job.id} completed | cart: ${job.data.cartId} | stage: ${job.data.stage}`);
-});
-
-module.exports = reminderQueue;
+module.exports = { getQueue, scheduleReminderJob };
