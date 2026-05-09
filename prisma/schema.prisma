@@ -7,51 +7,29 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model AbandonedCart {
-  id             String     @id @default(cuid())
-  cartToken      String     @unique
-  products       Json
-  checkoutUrl    String?
-  totalPrice     String?
-  currency       String?
-  customerPhone  String?
-  customerEmail  String?
-  customerName   String?
-  status         CartStatus @default(ACTIVE)
-  reminderSent   Boolean    @default(false)
-  remindersCount Int        @default(0)
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
+model Customer {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  phone     String
+  createdAt DateTime @default(now())
 
-  reminders CartReminder[]
-
-  @@map("abandoned_carts")
+  @@map("customers")
 }
 
-model CartReminder {
-  id          String         @id @default(cuid())
-  cartId      String
-  cart        AbandonedCart  @relation(fields: [cartId], references: [id])
-  jobId       String?
-  stage       Int
-  scheduledAt DateTime
-  sentAt      DateTime?
-  status      ReminderStatus @default(PENDING)
-  error       String?
-  createdAt   DateTime       @default(now())
+model Cart {
+  id           String     @id  // cart_token is the primary key
+  email        String
+  phone        String?
+  items        Json
+  status       CartStatus @default(active)
+  reminderSent Boolean    @default(false)
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
-  @@map("cart_reminders")
+  @@map("carts")
 }
 
 enum CartStatus {
-  ACTIVE
-  CONVERTED
-  ABANDONED
-}
-
-enum ReminderStatus {
-  PENDING
-  SENT
-  FAILED
-  SKIPPED
+  active
+  converted
 }

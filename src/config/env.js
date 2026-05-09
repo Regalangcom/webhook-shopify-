@@ -12,9 +12,6 @@ module.exports = {
 
   shopify: {
     webhookSecret: required('SHOPIFY_WEBHOOK_SECRET'),
-    shopDomain: required('SHOPIFY_SHOP_DOMAIN'),
-    adminApiToken: required('SHOPIFY_ADMIN_API_TOKEN'),
-    apiVersion: process.env.SHOPIFY_API_VERSION || '2024-01',
   },
 
   fonte: {
@@ -23,6 +20,7 @@ module.exports = {
     senderId: process.env.FONTE_SENDER_ID,
   },
 
+  // Used only when switching to BullMQ queue (see /queues and /workers)
   redis: {
     host: process.env.REDIS_HOST || '127.0.0.1',
     port: parseInt(process.env.REDIS_PORT || '6379', 10),
@@ -30,8 +28,8 @@ module.exports = {
   },
 
   reminders: {
-    delay1: parseInt(process.env.REMINDER_DELAY_1 || '3600000', 10),   // 1 hour
-    delay2: parseInt(process.env.REMINDER_DELAY_2 || '86400000', 10),  // 24 hours
+    // 30 minutes default — delay before sending WhatsApp reminder
+    delay: parseInt(process.env.REMINDER_DELAY || '1800000', 10),
   },
 
   dashboard: {

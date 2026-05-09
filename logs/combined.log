@@ -1,0 +1,33 @@
+2026-05-06 14:03:39 [info]: Server running on port 3000 [development]
+2026-05-06 14:03:39 [info]: Webhook:    POST /webhook/orders-create
+2026-05-06 14:03:39 [info]: Track cart: POST /track-cart
+2026-05-06 14:03:39 [info]: Dashboard:  GET  /dashboard/carts
+2026-05-06 14:03:39 [info]: Health:     GET  /dashboard/health
+2026-05-06 14:08:37 [info]: Server running on port 3000 [development]
+2026-05-06 14:08:37 [info]: Webhook:    POST /webhook/orders-create
+2026-05-06 14:08:37 [info]: Track cart: POST /track-cart
+2026-05-06 14:08:37 [info]: Dashboard:  GET  /dashboard/carts
+2026-05-06 14:08:37 [info]: Health:     GET  /dashboard/health
+2026-05-06 15:30:21 [warn]: Order webhook missing email or phone — email:undefined phone:null
+2026-05-06 15:30:21 [debug]: Order webhook had no cart_token — skipping cart update
+2026-05-06 15:33:15 [warn]: Order webhook missing email or phone — email:undefined phone:null
+2026-05-06 15:33:15 [debug]: Order webhook had no cart_token — skipping cart update
+2026-05-06 15:33:26 [warn]: Order webhook missing email or phone — email:undefined phone:null
+2026-05-06 15:33:26 [debug]: Order webhook had no cart_token — skipping cart update
+2026-05-06 15:37:22 [warn]: Order webhook missing email or phone — email:undefined phone:null
+2026-05-06 15:37:22 [debug]: Order webhook had no cart_token — skipping cart update
+2026-05-06 16:23:03 [warn]: Order webhook missing email or phone — email:undefined phone:null
+2026-05-06 16:23:03 [debug]: Order webhook had no cart_token — skipping cart update
+2026-05-06 16:27:12 [warn]: Order webhook missing email or phone — email:undefined phone:null
+2026-05-06 16:27:12 [debug]: Order webhook had no cart_token — skipping cart update
+2026-05-08 15:38:08 [info]: Server running on port 3000 [development]
+2026-05-08 15:38:08 [info]: Webhook:    POST /webhook/orders-create
+2026-05-08 15:38:08 [info]: Track cart: POST /track-cart
+2026-05-08 15:38:08 [info]: Dashboard:  GET  /dashboard/carts
+2026-05-08 15:38:08 [info]: Health:     GET  /dashboard/health
+2026-05-08 15:41:18 [warn]: Order webhook missing email or phone — email:undefined phone:null
+2026-05-08 15:41:18 [debug]: Order webhook had no cart_token — skipping cart update
+2026-05-08 15:57:37 [warn]: Order webhook missing email or phone — email:undefined phone:null
+2026-05-08 15:57:37 [debug]: Order webhook had no cart_token — skipping cart update
+2026-05-08 16:51:50 [warn]: Order webhook missing email or phone — email:undefined phone:null
+2026-05-08 16:51:50 [debug]: Order webhook had no cart_token — skipping cart update
