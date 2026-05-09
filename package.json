@@ -5,7 +5,7 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js",
+    "dev": "nodemon server.js", 
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev --name init",
     "db:push": "prisma db push",
@@ -14,16 +14,22 @@
   "dependencies": {
     "@prisma/client": "^5.7.1",
     "axios": "^1.6.2",
-    "bull": "^4.12.2",
+    "bullmq": "^5.76.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
     "express-rate-limit": "^7.1.5",
+    "ioredis": "^5.10.1",
     "winston": "^3.11.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2",
     "prisma": "^5.7.1"
   },
-  "keywords": ["shopify", "webhook", "abandoned-cart", "whatsapp"],
+  "keywords": [
+    "shopify",
+    "webhook",
+    "abandoned-cart",
+    "whatsapp"
+  ],
   "license": "ISC"
 }
